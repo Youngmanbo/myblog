@@ -19,7 +19,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ow0$8l3ln7&m(07rb1um*h@old&!+z+gnp%=#fe15f6^0sj_8v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,10 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'myblog',
     'rest_framework',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'ckeditor',
+    'ckeditor_uploader',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -77,10 +80,25 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+import json
+
+with open('config.json', 'r') as f:
+    json_data = json.load(f)
+    db_key = json_data['POSTGRESQL_KEY']
+    api_key = json_data['OPENAI_API_KEY']
+    secret_key = json_data['SECRET_KEY']
+
+SECRET_KEY = secret_key
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': "myblog",
+        'USER': "blog_project_user",
+        "PASSWORD" : db_key,
+        "HOST" : "blog-project-db.cgoq8zivseqk.ap-northeast-2.rds.amazonaws.com",
+        "PORT": "5432",
+
     }
 }
 
@@ -107,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-KR'
 
 TIME_ZONE = 'UTC'
 
@@ -126,8 +144,14 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+
 
 from datetime import timedelta
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
